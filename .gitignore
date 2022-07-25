@@ -1,0 +1,11 @@
+# Workspace
+projects/
+temp/
+
+# System
+**/.DS_Store
+
+# VS Code
+**/.vscode/*
+!**/.vscode/extensions.json
+!**/.vscode/settings.json

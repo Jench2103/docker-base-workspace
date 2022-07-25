@@ -1,0 +1,106 @@
+#!/bin/bash
+
+set -e
+
+cd "$(dirname "$0")"
+
+IMAGE_NAME="base-workspace"
+CONTAINER_NAME="base-workspace"
+USERNAME="$(id -un)"
+GROUPNAME="$(id -gn)"
+
+VOLUME_PROJECTS_DIR="${PWD}/projects/"
+VOLUME_SSH_DIR="${PWD}/temp/.ssh/"
+VOLUME_VSCODESERVER_DIR="${PWD}/temp/.vscode-server/"
+
+usage_message() {
+    cat <<EOF
+
+    This script will help you manage the Docker Base Workspace.
+    You can execute this script with the following options.
+
+    --start     : build and enter the workspace
+    --stop      : stop and exit the workspace
+    --prune     : remove the docker image
+    --rebuild   : remove and build a new image to apply new changes
+
+EOF
+}
+
+start_environment() {
+    if [[ "$(docker images -q ${IMAGE_NAME})" == "" ]]; then
+        docker build \
+            --build-arg UID="$(id -u)" \
+            --build-arg GID="$(id -g)" \
+            --build-arg USERNAME="${USERNAME}" \
+            --build-arg GROUPNAME="${GROUPNAME}" \
+            -t ${IMAGE_NAME} . ||
+            { echo "error due to docker build image" && exit 1; }
+    fi
+
+    [[ -d ${VOLUME_SSH_DIR} ]] || mkdir -p "${VOLUME_SSH_DIR}"
+    [[ -d ${VOLUME_VSCODESERVER_DIR} ]] || mkdir -p "${VOLUME_VSCODESERVER_DIR}"
+    [[ -d ${VOLUME_PROJECTS_DIR} ]] || mkdir -p "${VOLUME_PROJECTS_DIR}"
+
+    if [[ "$(docker ps | grep ${CONTAINER_NAME})" == "" ]]; then
+        docker run -d \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_PROJECTS_DIR}" || echo "${VOLUME_PROJECTS_DIR}")":"/home/${USERNAME}/projects/" \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_SSH_DIR}" || echo "${VOLUME_SSH_DIR}")":"/home/${USERNAME}/.ssh/" \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_VSCODESERVER_DIR}" || echo "${VOLUME_VSCODESERVER_DIR}")":"/home/${USERNAME}/.vscode-server/" \
+            --hostname "$(echo ${CONTAINER_NAME} | tr '[:lower:]' '[:upper:]')" \
+            --name ${CONTAINER_NAME} \
+            ${IMAGE_NAME} ||
+            { echo "error due to docker run image" && exit 1; }
+    fi
+
+    case ${OSTYPE} in
+    msys)
+        winpty docker exec -it ${CONTAINER_NAME} bash
+        ;;
+    *)
+        docker exec -it ${CONTAINER_NAME} bash
+        ;;
+    esac
+
+    clear
+}
+
+stop_docker_container() {
+    if [[ "$(docker ps -a | grep ${CONTAINER_NAME})" != "" ]]; then
+        docker container rm -f ${CONTAINER_NAME}
+    fi
+}
+
+remove_docker_image() {
+    if [[ "$(docker images -q ${IMAGE_NAME})" != "" ]]; then
+        docker rmi ${IMAGE_NAME}
+    fi
+}
+
+export DOCKER_SCAN_SUGGEST=false
+
+[[ $(
+    docker ps >/dev/null 2>&1
+    echo $?
+) != 0 ]] && echo "error: please install and start Docker Engine first!!!" && exit 1
+
+case $1 in
+--start)
+    start_environment
+    ;;
+--stop)
+    stop_docker_container
+    ;;
+--prune)
+    stop_docker_container
+    remove_docker_image
+    ;;
+--rebuild)
+    stop_docker_container
+    remove_docker_image
+    start_environment
+    ;;
+*)
+    usage_message
+    ;;
+esac

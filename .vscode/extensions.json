@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "EditorConfig.EditorConfig",
+    "ms-azuretools.vscode-docker",
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format"
+  ]
+}
