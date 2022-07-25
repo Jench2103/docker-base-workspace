@@ -7,7 +7,6 @@ cd "$(dirname "$0")"
 IMAGE_NAME="base-workspace"
 CONTAINER_NAME="base-workspace"
 USERNAME="$(id -un)"
-GROUPNAME="$(id -gn)"
 
 VOLUME_PROJECTS_DIR="${PWD}/projects/"
 VOLUME_SSH_DIR="${PWD}/temp/.ssh/"
@@ -33,7 +32,6 @@ start_environment() {
             --build-arg UID="$(id -u)" \
             --build-arg GID="$(id -g)" \
             --build-arg USERNAME="${USERNAME}" \
-            --build-arg GROUPNAME="${GROUPNAME}" \
             -t ${IMAGE_NAME} . ||
             { echo "error due to docker build image" && exit 1; }
     fi

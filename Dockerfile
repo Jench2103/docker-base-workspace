@@ -3,7 +3,6 @@ FROM ubuntu:20.04
 ARG UID=1000
 ARG GID=1000
 ARG USERNAME="user"
-ARG GROUPNAME="users"
 ARG TZ="Asia/Taipei"
 
 ENV INSTALLATION_TOOLS apt-utils \
@@ -56,7 +55,7 @@ RUN sed -i 's/# en_US.UTF-8/en_US.UTF-8/g' /etc/locale.gen && \
 ENV LC_ALL en_US.UTF-8
 
 # add non-root user account
-RUN groupadd -o -g ${GID} ${GROUPNAME} && \
+RUN groupadd -o -g ${GID} ${USERNAME} && \
     useradd -u ${UID} -m -s /bin/bash -g ${GID} ${USERNAME} && \
     echo "${USERNAME} ALL = NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
