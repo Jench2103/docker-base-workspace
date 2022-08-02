@@ -41,6 +41,7 @@ start_environment() {
     [[ -d ${VOLUME_PROJECTS_DIR} ]] || mkdir -p "${VOLUME_PROJECTS_DIR}"
 
     if [[ "$(docker ps | grep ${CONTAINER_NAME})" == "" ]]; then
+        stop_docker_container
         docker run -d \
             -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_PROJECTS_DIR}" || echo "${VOLUME_PROJECTS_DIR}")":"/home/${USERNAME}/projects/" \
             -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_SSH_DIR}" || echo "${VOLUME_SSH_DIR}")":"/home/${USERNAME}/.ssh/" \
