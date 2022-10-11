@@ -38,7 +38,8 @@ RUN apt-get -qq update && \
 
 # install python libraries
 COPY ./config/requirements.txt /tmp/requirements.txt
-RUN pip3 install -r /tmp/requirements.txt && \
+RUN pip3 install --upgrade pip && \
+    pip3 install -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
 # setup time zone
