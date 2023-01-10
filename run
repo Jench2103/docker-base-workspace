@@ -19,10 +19,10 @@ usage_message() {
     This script will help you manage the Docker Base Workspace.
     You can execute this script with the following options.
 
-    --start     : build and enter the workspace
-    --stop      : stop and exit the workspace
-    --prune     : remove the docker image
-    --rebuild   : remove and build a new image to apply new changes
+    start     : build and enter the workspace
+    stop      : stop and exit the workspace
+    prune     : remove the docker image
+    rebuild   : remove and build a new image to apply new changes
 
 EOF
 }
@@ -87,17 +87,17 @@ export DOCKER_SCAN_SUGGEST=false
 ) != 0 ]] && echo "error: please install and start Docker Engine first!!!" && exit 1
 
 case $1 in
---start)
+start)
     start_environment
     ;;
---stop)
+stop)
     stop_docker_container
     ;;
---prune)
+prune)
     stop_docker_container
     remove_docker_image
     ;;
---rebuild)
+rebuild)
     stop_docker_container
     remove_docker_image
     start_environment
