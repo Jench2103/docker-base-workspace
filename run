@@ -5,8 +5,8 @@ set -e
 cd "$(dirname "$0")"
 
 GIT_BRANCH=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-IMAGE_NAME="base-workspace-${GIT_BRANCH,,}"
-CONTAINER_NAME="base-workspace-${GIT_BRANCH,,}"
+IMAGE_NAME="base-workspace-${GIT_BRANCH}"
+CONTAINER_NAME="base-workspace-${GIT_BRANCH}"
 USERNAME="$(id -un)"
 
 VOLUME_PROJECTS_DIR="${PWD}/projects/"

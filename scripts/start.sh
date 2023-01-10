@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script will be executed while the container is starting.
+
 # change owner and permission of volume folders
 sudo chown -R "$(id -u)":"$(id -g)" "/home/$(id -un)/.ssh"
 chmod 755 "/home/$(id -un)/.ssh" && chmod 644 "/home/$(id -un)/.ssh"/*
