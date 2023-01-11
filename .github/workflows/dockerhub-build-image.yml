@@ -1,18 +1,23 @@
 # ref: https://blog.oddbit.com/post/2020-09-25-building-multi-architecture-im/
 
-name: 'build images'
+name: 'Docker Hub - Build Image'
 
 on:
   push:
     branches:
-        - main
+      - main
+    paths:
+      - config/**
+      - scripts/**
+      - Dockerfile
+      - run
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Prepare
         id: prep
@@ -60,6 +65,6 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: ${{ steps.prep.outputs.tags }}

@@ -3,6 +3,7 @@
     "EditorConfig.EditorConfig",
     "ms-azuretools.vscode-docker",
     "timonwong.shellcheck",
-    "foxundermoon.shell-format"
+    "foxundermoon.shell-format",
+    "yzhang.markdown-all-in-one"
   ]
 }

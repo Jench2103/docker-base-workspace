@@ -1,5 +1,8 @@
 {
   "editor.formatOnSave": true,
+  "markdown.extension.toc.slugifyMode": "github",
+  "markdown.extension.toc.levels": "2..3",
+  "markdown.extension.list.indentationSize": "inherit",
   "shellformat.useEditorConfig": true,
   "shellcheck.exclude": [
     "1090",
