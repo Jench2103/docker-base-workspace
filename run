@@ -19,18 +19,40 @@ usage_message() {
     This script will help you manage the Docker Base Workspace.
     You can execute this script with the following options.
 
-    start     : build and enter the workspace
+    pull      : pull the latest official image from DockerHub
+    build     : build a new image on this machine
+    start     : pull and enter the workspace
     stop      : stop and exit the workspace
     prune     : remove the docker image
-    rebuild   : remove and build a new image to apply new changes
+    repull    : remove the existing image and pull the latest one to apply new changes
+    rebuild   : remove the existing image and build a new one to apply new changes
 
 EOF
 }
 
-start_environment() {
+build_image() {
     if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
         docker build -t "${IMAGE_NAME}" . ||
             { echo "error due to docker build image" && exit 1; }
+    else
+        echo "There exists image \`${IMAGE_NAME}\`."
+        echo "Use \`run rebuild\` if you want to remove the existing image and build a new one."
+    fi
+}
+
+pull_image() {
+    if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+        docker pull jench2103/docker-base-workspace:latest
+        docker tag jench2103/docker-base-workspace:latest "${IMAGE_NAME}"
+    else
+        echo "There exists image \`${IMAGE_NAME}\`."
+        echo "Use \`run repull\` if you want to remove the existing image and pull the latest one."
+    fi
+}
+
+start_environment() {
+    if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+        pull_image
     fi
 
     [[ -d ${VOLUME_SSH_DIR} ]] || mkdir -p "${VOLUME_SSH_DIR}"
@@ -83,6 +105,12 @@ export DOCKER_SCAN_SUGGEST=false
 ) != 0 ]] && echo "error: please install and start Docker Engine first!!!" && exit 1
 
 case $1 in
+pull)
+    pull_image
+    ;;
+build)
+    build_image
+    ;;
 start)
     start_environment
     ;;
@@ -93,10 +121,15 @@ prune)
     stop_docker_container
     remove_docker_image
     ;;
+repull)
+    stop_docker_container
+    remove_docker_image
+    pull_image
+    ;;
 rebuild)
     stop_docker_container
     remove_docker_image
-    start_environment
+    build_image
     ;;
 *)
     usage_message

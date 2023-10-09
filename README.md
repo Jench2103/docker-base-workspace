@@ -67,14 +67,17 @@ $ bash run
     This script will help you manage the Docker Base Workspace.
     You can execute this script with the following options.
 
-    start     : build and enter the workspace
+    pull      : pull the latest official image from DockerHub
+    build     : build a new image on this machine
+    start     : pull and enter the workspace
     stop      : stop and exit the workspace
     prune     : remove the docker image
-    rebuild   : remove and build a new image to apply new changes
+    repull    : remove the existing image and pull the latest one to apply new changes
+    rebuild   : remove the existing image and build a new one to apply new changes
 ```
 
 - The `bash run start` command can perform different tasks for you depending on the actual situation.
-    - First execution: Build the Docker image, create a container, and enter the terminal.
+    - First execution: Pull the Docker image, create a container, and enter the terminal.
     - Image exists but no running container: Create a container and enter the terminal.
     - Container is running: Enter the terminal.
 - Users can put all permanent files in `~/projects` of the workspace, which is mounted to `docker-base-workspace/projects` on the host machine.
@@ -104,7 +107,7 @@ docker-base-workspace/
 
 ### Install Packages
 - System packages: Customize the `apt-get install` commands in [`Dockerfile`](https://github.com/Jench2103/docker-base-workspace/blob/main/Dockerfile). Use flag `-qq` to make installation processes quiet and assume `yes` for questions by default.
-- Python packages: Add packages' names (and versions) into [`config/requirements.txt`](https://github.com/Jench2103/docker-base-workspace/blob/main/config/requirements.txt).
+- Python packages: Add package names (and versions) into [`config/requirements.txt`](https://github.com/Jench2103/docker-base-workspace/blob/main/config/requirements.txt).
 
 ### Uses of the Scripts in the Workspace
 - [`scripts/start.sh`](https://github.com/Jench2103/docker-base-workspace/blob/main/scripts/start.sh): Execute when the container start, should be blocked before reach the end.

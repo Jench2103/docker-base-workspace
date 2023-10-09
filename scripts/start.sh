@@ -7,7 +7,12 @@ sudo chown -R "${USERID}":"${GROUPID}" "/home/$(id -un)"
 
 # configure the GID of the user in container to match the host system
 if [[ ${GROUPID} != "" && ${GROUPID} != "$(id -g)" ]]; then
-    sudo groupmod -g "${GROUPID}" "$(id -gn)"
+    if [[ $(getent group "${GROUPID}") == "" ]]; then
+        sudo groupmod -g "${GROUPID}" "$(id -gn)"
+    else
+        sudo usermod -aG "$(getent group "${GROUPID}" | cut -d: -f1)" "$(id -un)"
+        sudo usermod -g "$(getent group "${GROUPID}" | cut -d: -f1)" "$(id -un)"
+    fi
 fi
 
 # configure the UID of the user in container to match the host system

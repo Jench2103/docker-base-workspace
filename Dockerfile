@@ -83,4 +83,4 @@ USER ${USERNAME}
 
 WORKDIR /home/${USERNAME}
 
-CMD [ "bash", "/docker/start.sh" ]
+CMD [ "/bin/bash", "-c", "bash -x /docker/start.sh > /docker/start.log 2>&1" ]
