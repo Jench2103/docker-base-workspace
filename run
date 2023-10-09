@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 GIT_BRANCH=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
 IMAGE_NAME="base-workspace-${GIT_BRANCH}"
 CONTAINER_NAME="base-workspace-${GIT_BRANCH}"
-USERNAME="$(id -un)"
+CONTAINER_USERNAME="user"
 
 VOLUME_PROJECTS_DIR="${PWD}/projects/"
 VOLUME_SSH_DIR="${PWD}/temp/.ssh/"
@@ -29,11 +29,7 @@ EOF
 
 start_environment() {
     if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
-        docker build \
-            --build-arg UID="$(id -u)" \
-            --build-arg GID="$(id -g)" \
-            --build-arg USERNAME="${USERNAME}" \
-            -t "${IMAGE_NAME}" . ||
+        docker build -t "${IMAGE_NAME}" . ||
             { echo "error due to docker build image" && exit 1; }
     fi
 
@@ -46,9 +42,9 @@ start_environment() {
         docker run -d \
             -e USERID="$(id -u)" \
             -e GROUPID="$(id -g)" \
-            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_PROJECTS_DIR}" || echo "${VOLUME_PROJECTS_DIR}")":"/home/${USERNAME}/projects/" \
-            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_SSH_DIR}" || echo "${VOLUME_SSH_DIR}")":"/home/${USERNAME}/.ssh/" \
-            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_VSCODESERVER_DIR}" || echo "${VOLUME_VSCODESERVER_DIR}")":"/home/${USERNAME}/.vscode-server/" \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_PROJECTS_DIR}" || echo "${VOLUME_PROJECTS_DIR}")":"/home/${CONTAINER_USERNAME}/projects/" \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_SSH_DIR}" || echo "${VOLUME_SSH_DIR}")":"/home/${CONTAINER_USERNAME}/.ssh/" \
+            -v "$([[ ${OSTYPE} == "msys" ]] && echo "/${VOLUME_VSCODESERVER_DIR}" || echo "${VOLUME_VSCODESERVER_DIR}")":"/home/${CONTAINER_USERNAME}/.vscode-server/" \
             --hostname "$(echo "${CONTAINER_NAME}" | tr '[:lower:]' '[:upper:]')" \
             --name "${CONTAINER_NAME}" \
             "${IMAGE_NAME}" ||
