@@ -7,6 +7,8 @@ A dockerized [Ubuntu 20.04](https://hub.docker.com/_/ubuntu/) workspace template
     - [Using Pre-built Images without Modification](#using-pre-built-images-without-modification)
     - [Using as a Base Image](#using-as-a-base-image)
     - [Build Images from Source Code](#build-images-from-source-code)
+    - [Build Images and Push to DockerHub](#build-images-and-push-to-dockerhub)
+    - [Common Instructions](#common-instructions)
 - [Create Your Own Docker Workspace](#create-your-own-docker-workspace)
     - [File Structure](#file-structure)
     - [User Account in Container](#user-account-in-container)
@@ -18,44 +20,6 @@ A dockerized [Ubuntu 20.04](https://hub.docker.com/_/ubuntu/) workspace template
 - Docker Hub: https://hub.docker.com/r/jench2103/docker-base-workspace
 
 ## User Guides
-### Using Pre-built Images without Modification
-```shell
-$ docker pull jench2103/docker-base-workspace
-
-$ export WORKSPACE_DIR="${PWD}/docker-base-workspace"
-$ export VOLUME_PROJECTS_DIR="${WORKSPACE_DIR}/projects"
-$ export VOLUME_SSH_DIR="${WORKSPACE_DIR}/.ssh"
-$ export VOLUME_VSCODESERVER_DIR="${WORKSPACE_DIR}/.vscode-server"
-$ export CONTAINER_NAME=docker-base-workspace
-
-$ mkdir -p "${VOLUME_PROJECTS_DIR}" "${VOLUME_SSH_DIR}" "${VOLUME_VSCODESERVER_DIR}"
-$ cd ${WORKSPACE_DIR}
-
-$ docker run -d \
-    -e USERID="$(id -u)" \
-    -e GROUPID="$(id -g)" \
-    -v "${VOLUME_PROJECTS_DIR}":"/home/user/projects/" \
-    -v "${VOLUME_SSH_DIR}":"/home/user/.ssh/" \
-    -v "${VOLUME_VSCODESERVER_DIR}":"/home/user/.vscode-server/" \
-    --name "${CONTAINER_NAME}" \
-    jench2103/docker-base-workspace
-
-$ docker exec -it "${CONTAINER_NAME}" bash
-```
-
-Use this command to close and remove a running container.
-```shell
-$ docker container kill "${CONTAINER_NAME}"
-$ docker container rm "${CONTAINER_NAME}"
-```
-
-### Using as a Base Image
-Import this image into your dockerfile with the following statement.
-```dockerfile
-FROM jench2103/docker-base-workspace
-```
-
-### Build Images from Source Code
 In the GitHub repo, there is a script `run` which can help you manage the worspace easily. Note that if you are working on Windows systems, use the following commands in Bash-like shells such as [Git Bash](https://git-scm.com/download/win).
 
 ```shell
@@ -67,15 +31,48 @@ $ bash run
     This script will help you manage the Docker Base Workspace.
     You can execute this script with the following options.
 
-    pull      : pull the latest official image from DockerHub
-    build     : build a new image on this machine
-    start     : pull and enter the workspace
-    stop      : stop and exit the workspace
-    prune     : remove the docker image
-    repull    : remove the existing image and pull the latest one to apply new changes
-    rebuild   : remove the existing image and build a new one to apply new changes
+    pull            : pull the latest official image from DockerHub
+    build           : build a new image on this machine
+    build-registry  : build images with specified platforms and push to DockerHub
+    start           : pull and enter the workspace
+    stop            : stop and exit the workspace
+    prune           : remove the docker image
+    repull          : remove the existing image and pull the latest one to apply new changes
+    rebuild         : remove the existing image and build a new one to apply new changes
 ```
 
+### Using Pre-built Images without Modification
+```shell
+$ bash run start
+```
+
+Use this command to close and remove a running container.
+```shell
+$ bash run stop
+```
+
+### Using as a Base Image
+Import this image into your dockerfile with the following statement.
+```dockerfile
+FROM jench2103/docker-base-workspace
+```
+
+### Build Images from Source Code
+```shell
+$ bash run build
+```
+
+To remove an existing image for further rebuilding, use the following command. Note that this command will stop existing containers before removing images.
+```shell
+$ bash run prune
+```
+
+### Build Images and Push to DockerHub
+```shell
+$ bash run build-registry
+```
+
+### Common Instructions
 - The `bash run start` command can perform different tasks for you depending on the actual situation.
     - First execution: Pull the Docker image, create a container, and enter the terminal.
     - Image exists but no running container: Create a container and enter the terminal.
