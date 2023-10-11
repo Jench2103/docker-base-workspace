@@ -5,6 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 GIT_BRANCH=$(git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
+GIT_COMMIT_ID=$(git rev-parse --short HEAD)
 IMAGE_NAME="base-workspace-${GIT_BRANCH}"
 CONTAINER_NAME="base-workspace-${GIT_BRANCH}"
 CONTAINER_USERNAME="user"
@@ -13,19 +14,23 @@ VOLUME_PROJECTS_DIR="${PWD}/projects/"
 VOLUME_SSH_DIR="${PWD}/temp/.ssh/"
 VOLUME_VSCODESERVER_DIR="${PWD}/temp/.vscode-server/"
 
+DOCKERHUB_PUSH_TAG_NAME="jench2103/docker-base-workspace"
+DOCKERHUB_PUSH_ARCH="linux/amd64,linux/arm64"
+
 usage_message() {
     cat <<EOF
 
     This script will help you manage the Docker Base Workspace.
     You can execute this script with the following options.
 
-    pull      : pull the latest official image from DockerHub
-    build     : build a new image on this machine
-    start     : pull and enter the workspace
-    stop      : stop and exit the workspace
-    prune     : remove the docker image
-    repull    : remove the existing image and pull the latest one to apply new changes
-    rebuild   : remove the existing image and build a new one to apply new changes
+    pull            : pull the latest official image from DockerHub
+    build           : build a new image on this machine
+    build-registry  : build images with specified platforms and push to DockerHub
+    start           : pull and enter the workspace
+    stop            : stop and exit the workspace
+    prune           : remove the docker image
+    repull          : remove the existing image and pull the latest one to apply new changes
+    rebuild         : remove the existing image and build a new one to apply new changes
 
 EOF
 }
@@ -37,6 +42,24 @@ build_image() {
     else
         echo "There exists image \`${IMAGE_NAME}\`."
         echo "Use \`run rebuild\` if you want to remove the existing image and build a new one."
+    fi
+}
+
+build_image_dockerhub() {
+    if [[ ${DOCKERHUB_PUSH_TAG_NAME} != "" && ${DOCKERHUB_PUSH_ARCH} != "" ]]; then
+        if [ -z "$(git status --porcelain)" ]; then
+            # Working directory clean
+            DOCKERHUB_PUSH_TAG="-t ${DOCKERHUB_PUSH_TAG_NAME}:latest -t ${DOCKERHUB_PUSH_TAG_NAME}:${GIT_COMMIT_ID}"
+        else
+            # Uncommitted changes
+            DOCKERHUB_PUSH_TAG="-t ${DOCKERHUB_PUSH_TAG_NAME}:latest"
+        fi
+        # shellcheck disable=SC2086
+        docker buildx build --platform "${DOCKERHUB_PUSH_ARCH}" ${DOCKERHUB_PUSH_TAG} --push . ||
+            { echo "error due to building image with docker buildx" && exit 1; }
+    else
+        echo "The information for building and pushing images to DockerHub is empty."
+        echo "Please update the \`run\` script with proper values before using this subcommand."
     fi
 }
 
@@ -110,6 +133,9 @@ pull)
     ;;
 build)
     build_image
+    ;;
+build-registry)
+    build_image_dockerhub
     ;;
 start)
     start_environment
