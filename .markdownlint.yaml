@@ -1,0 +1,9 @@
+# Example: https://github.com/DavidAnson/markdownlint/blob/main/schema/.markdownlint.yaml
+
+# MD007/ul-indent : Unordered list indentation : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md007.md
+MD007:
+  # Spaces for indent
+  indent: 4
+
+# MD013/line-length : Line length : https://github.com/DavidAnson/markdownlint/blob/v0.33.0/doc/md013.md
+MD013: false

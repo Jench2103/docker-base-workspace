@@ -34,12 +34,16 @@ RUN apt-get -qq update && \
     # start install
     apt-get -qq update && \
     apt-get -qq upgrade && \
-    apt-get -qq install ${DEVELOPMENT_PACKAGES} ${TOOL_PACKAGES}
+    apt-get -qq install ${DEVELOPMENT_PACKAGES} ${TOOL_PACKAGES} && \
+    # delete the apt-get lists to minimize the image size
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # install python libraries
 COPY ./config/requirements.txt /tmp/requirements.txt
-RUN pip3 install --upgrade pip && \
-    pip3 install -r /tmp/requirements.txt && \
+# hadolint ignore=DL3013
+RUN pip3 install --no-cache-dir --upgrade pip && \
+    pip3 install --no-cache-dir -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 
 # setup time zone
@@ -57,7 +61,7 @@ ENV LC_ALL en_US.UTF-8
 
 # add non-root user account
 RUN groupadd -o -g ${GID} ${USERNAME} && \
-    useradd -u ${UID} -m -s /bin/bash -g ${GID} ${USERNAME} && \
+    useradd -l -u ${UID} -m -s /bin/bash -g ${GID} ${USERNAME} && \
     echo "${USERNAME} ALL = NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     passwd -d ${USERNAME}
@@ -67,6 +71,7 @@ COPY --chown=${UID}:${GID} ./scripts/.bashrc /home/${USERNAME}/.bashrc
 COPY --chown=${UID}:${GID} ./scripts/start.sh /docker/start.sh
 COPY --chown=${UID}:${GID} ./scripts/login.sh /docker/login.sh
 COPY --chown=${UID}:${GID} ./scripts/startup.sh /usr/local/bin/startup
+# hadolint ignore=DL4006
 RUN dos2unix -ic "/home/${USERNAME}/.bashrc" | xargs dos2unix && \
     dos2unix -ic "/docker/start.sh" | xargs dos2unix && \
     dos2unix -ic "/docker/login.sh" | xargs dos2unix && \
