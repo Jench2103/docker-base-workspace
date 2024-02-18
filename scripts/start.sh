@@ -2,11 +2,19 @@
 
 # This script will be executed while the container is starting.
 
+USERID=${USERID:-"$(id -u)"}
+GROUPID=${GROUPID:-"$(id -g)"}
+
 # change the ownership of the home directory
-sudo chown -R "${USERID}":"${GROUPID}" "/home/$(id -un)"
+if [[ ${USERID} != "$(id -u)" || ${GROUPID} != "$(id -g)" ]]; then
+    for file in "/home/$(id -un)"/.[!.]* "/home/$(id -un)"/*; do
+        sudo chown "${USERID}":"${GROUPID}" "${file}"
+    done
+    sudo chown "${USERID}":"${GROUPID}" "/home/$(id -un)"
+fi
 
 # configure the GID of the user in container to match the host system
-if [[ ${GROUPID} != "" && ${GROUPID} != "$(id -g)" ]]; then
+if [[ ${GROUPID} != "$(id -g)" ]]; then
     if [[ $(getent group "${GROUPID}") == "" ]]; then
         sudo groupmod -g "${GROUPID}" "$(id -gn)"
     else
