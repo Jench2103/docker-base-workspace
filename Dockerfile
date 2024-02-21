@@ -22,7 +22,7 @@ ENV TOOL_PACKAGES bash \
     sudo \
     wget
 
-ENV USER ${USERNAME}
+ENV USER "${USERNAME}"
 ENV TERM xterm-256color
 ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE DontWarn
 
@@ -60,14 +60,14 @@ RUN sed -i 's/# en_US.UTF-8/en_US.UTF-8/g' /etc/locale.gen && \
 ENV LC_ALL en_US.UTF-8
 
 # add non-root user account
-RUN groupadd -o -g ${GID} ${USERNAME} && \
-    useradd -l -u ${UID} -m -s /bin/bash -g ${GID} ${USERNAME} && \
-    echo "${USERNAME} ALL = NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME} && \
-    chmod 0440 /etc/sudoers.d/${USERNAME} && \
-    passwd -d ${USERNAME}
+RUN groupadd -o -g ${GID} "${USERNAME}" && \
+    useradd -l -u ${UID} -m -s /bin/bash -g ${GID} "${USERNAME}" && \
+    echo "${USERNAME} ALL = NOPASSWD: ALL" > "/etc/sudoers.d/${USERNAME}" && \
+    chmod 0440 "/etc/sudoers.d/${USERNAME}" && \
+    passwd -d "${USERNAME}"
 
 # add scripts and setup permissions
-COPY --chown=${UID}:${GID} ./scripts/.bashrc /home/${USERNAME}/.bashrc
+COPY --chown=${UID}:${GID} ./scripts/.bashrc "/home/${USERNAME}/.bashrc"
 COPY --chown=${UID}:${GID} ./scripts/start.sh /docker/start.sh
 COPY --chown=${UID}:${GID} ./scripts/login.sh /docker/login.sh
 COPY --chown=${UID}:${GID} ./scripts/startup.sh /usr/local/bin/startup
@@ -79,13 +79,13 @@ RUN dos2unix -ic "/home/${USERNAME}/.bashrc" | xargs dos2unix && \
     chmod +x "/usr/local/bin/startup"
 
 # user account configuration
-RUN mkdir -p /home/${USERNAME}/.ssh && \
-    mkdir -p /home/${USERNAME}/.vscode-server && \
-    mkdir -p /home/${USERNAME}/projects
-RUN chown -R ${UID}:${GID} /home/${USERNAME}
+RUN mkdir -p "/home/${USERNAME}/.ssh" && \
+    mkdir -p "/home/${USERNAME}/.vscode-server" && \
+    mkdir -p "/home/${USERNAME}/projects"
+RUN chown -R ${UID}:${GID} "/home/${USERNAME}"
 
-USER ${USERNAME}
+USER "${USERNAME}"
 
-WORKDIR /home/${USERNAME}
+WORKDIR "/home/${USERNAME}"
 
 CMD [ "/bin/bash", "-c", "bash -x /docker/start.sh > /docker/start.log 2>&1" ]
