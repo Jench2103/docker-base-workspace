@@ -95,7 +95,7 @@ start_environment() {
             "${IMAGE_NAME}" ||
             { echo "error due to docker run image" && exit 1; }
         # Wait until the start routine finished
-        while [[ $(docker exec "${CONTAINER_NAME}" id -u) != $(id -u) || $(docker exec "${CONTAINER_NAME}" id -g) != $(id -g) ]]; do
+        while docker exec "${CONTAINER_NAME}" test ! -f /docker/start.sh.done; do
             sleep 0.1
         done
     fi

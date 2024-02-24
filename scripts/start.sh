@@ -28,5 +28,8 @@ if [[ ${USERID} != "" && ${USERID} != "$(id -u)" ]]; then
     sudo usermod -u "${USERID}" "$(id -un)"
 fi
 
+# create a file to indicate this script has finished
+touch /docker/start.sh.done
+
 # keep the container running
 tail -f /dev/null
