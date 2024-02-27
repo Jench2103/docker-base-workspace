@@ -45,7 +45,7 @@ check_docker_running() {
 }
 
 check_image_exist() {
-    if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+    if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
         return 0
     else
         return 1
