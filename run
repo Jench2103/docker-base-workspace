@@ -35,8 +35,42 @@ usage_message() {
 EOF
 }
 
-build_image() {
+### auxiliary functions ###
+check_docker_running() {
+    if docker ps >/dev/null 2>&1; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_image_exist() {
     if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_container_running() {
+    if [ "$(docker ps | grep "${CONTAINER_NAME}")" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_container_exist() {
+    if [ "$(docker ps -a | grep "${CONTAINER_NAME}")" != "" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+### major functions ###
+build_image() {
+    if ! check_image_exist; then
         docker build -t "${IMAGE_NAME}" . ||
             { echo "error due to docker build image" && exit 1; }
     else
@@ -64,7 +98,7 @@ build_image_dockerhub() {
 }
 
 pull_image() {
-    if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+    if ! check_image_exist; then
         docker pull jench2103/docker-base-workspace:latest
         docker tag jench2103/docker-base-workspace:latest "${IMAGE_NAME}"
     else
@@ -74,7 +108,7 @@ pull_image() {
 }
 
 start_environment() {
-    if [[ "$(docker images -q "${IMAGE_NAME}")" == "" ]]; then
+    if ! check_image_exist; then
         pull_image
     fi
 
@@ -82,7 +116,7 @@ start_environment() {
     [[ -d ${VOLUME_VSCODESERVER_DIR} ]] || mkdir -p "${VOLUME_VSCODESERVER_DIR}"
     [[ -d ${VOLUME_PROJECTS_DIR} ]] || mkdir -p "${VOLUME_PROJECTS_DIR}"
 
-    if [[ "$(docker ps | grep "${CONTAINER_NAME}")" == "" ]]; then
+    if ! check_container_running; then
         stop_docker_container
         docker run -d \
             -e USERID="$(id -u)" \
@@ -113,23 +147,20 @@ start_environment() {
 }
 
 stop_docker_container() {
-    if [[ "$(docker ps -a | grep "${CONTAINER_NAME}")" != "" ]]; then
+    if check_container_exist; then
         docker container rm -f "${CONTAINER_NAME}"
     fi
 }
 
 remove_docker_image() {
-    if [[ "$(docker images -q "${IMAGE_NAME}")" != "" ]]; then
+    if check_image_exist; then
         docker rmi "${IMAGE_NAME}"
     fi
 }
 
 export DOCKER_SCAN_SUGGEST=false
 
-[[ $(
-    docker ps >/dev/null 2>&1
-    echo $?
-) != 0 ]] && echo "error: please install and start Docker Engine first!!!" && exit 1
+! check_docker_running && echo "error: please install and start Docker Engine first!!!" && exit 1
 
 case $1 in
 pull)
